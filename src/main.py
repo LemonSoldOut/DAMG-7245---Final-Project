@@ -284,6 +284,10 @@ async def log_requests(request: Request, call_next):
 ############################# Logging #################################
 
 ############################# API Functions #################################
+@app.get("/api/get/following/")
+async def getuserFollowCompanyStatusCheck(username,co_abbr, current_user: User = Depends(get_current_active_user)):
+    return get_stock_price.userFollowCompanyStatusCheck(username,co_abbr)
+
 
 @app.get("/api/get/SaveStockPrice/")
 async def SaveStockPrice(compamyabbreviation, current_user: User = Depends(get_current_active_user)):
@@ -291,9 +295,9 @@ async def SaveStockPrice(compamyabbreviation, current_user: User = Depends(get_c
     This function takes a company stock name as an input, and it returns the data from the past 7 days.
     """
     
-    get_stock_price.SaveStockPrice(compamyabbreviation)
     
-    return {"Saving success!"}
+    
+    return get_stock_price.SaveStockPrice(compamyabbreviation)
 @app.get("/api/get/getRecent7StockPrice/")
 async def getRecent7StockPrice(compamyabbreviation, current_user: User = Depends(get_current_active_user)):
     """
