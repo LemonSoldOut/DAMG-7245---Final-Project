@@ -32,11 +32,11 @@ from pydantic import BaseModel
 from datetime import datetime
 from pydantic import BaseModel
 import pymysql
+
 path = str(Path(Path(__file__).parent.absolute()))
 sys.path.insert(0, path)
-from api_functions import get_stock_price, returnHomePage
+from api_functions import returnHomePage, SearchStockPrice, PredictStockPrice, SaveStockPrice, TrainModel, UpdateStockPrice, userFollowCompanyStatusCheck
 app = FastAPI()
-
 global username
 username = ""
 # global accesstoken
@@ -285,72 +285,47 @@ async def log_requests(request: Request, call_next):
 
 ############################# API Functions #################################
 @app.get("/api/train/models/")
-async def dailyTrainedModel(current_user: User = Depends(get_current_active_user)):
-    result = get_stock_price.saveStockPriceandTrainModel()
+async def fun_TraineModel(current_user: User = Depends(get_current_active_user)):
+    result = TrainModel.TrainModel()
     return result
 
-
+@app.get("/api/get/update_stock_price/")
+async def fun_UpdateStockPrice(current_user: User = Depends(get_current_active_user)):
+    result = UpdateStockPrice.UpdateStockPrice()
+    return result
 
 @app.get("/api/get/following/")
-async def getuserFollowCompanyStatusCheck(username,co_abbr, current_user: User = Depends(get_current_active_user)):
-    return get_stock_price.userFollowCompanyStatusCheck(username,co_abbr)
+async def fun_userFollowCompanyStatusCheck(username,co_abbr, current_user: User = Depends(get_current_active_user)):
+    return userFollowCompanyStatusCheck.userFollowCompanyStatusCheck(username,co_abbr)
 
 
-@app.get("/api/get/SaveStockPrice/")
-async def SaveStockPrice(compamyabbreviation, current_user: User = Depends(get_current_active_user)):
+@app.get("/api/get/save_stock_price/")
+async def fun_SaveStockPrice(compamyabbreviation, current_user: User = Depends(get_current_active_user)):
     """
     This function takes a company stock name as an input, and it returns the data from the past 7 days.
     """
     
-    
-    
-    return get_stock_price.SaveStockPrice(compamyabbreviation)
-@app.get("/api/get/getRecent7StockPrice/")
-async def getRecent7StockPrice(compamyabbreviation, current_user: User = Depends(get_current_active_user)):
-    """
-    This function takes a company stock name as an input, and it returns the data from the past 7 days.
-    """
-    
-    result = get_stock_price.getRecent7StockPrice(compamyabbreviation)
-    
-    return result
+    return SaveStockPrice.SaveStockPrice(compamyabbreviation)
 
-@app.get("/api/get/getRecent30StockPrice/")
-async def getRecent30StockPrice(compamyabbreviation, current_user: User = Depends(get_current_active_user)):
-    """
-    This function takes a company stock name as an input, and it returns the data from the past 30 days.
-    """
-    result = get_stock_price.getRecent30StockPrice(compamyabbreviation)
-    
-    return result
-
-@app.get("/api/get/getRecent1YStockPrice/")
-async def getRecent1YStockPrice(compamyabbreviation, current_user: User = Depends(get_current_active_user)):
-    """
-    This function takes a company stock name as an input, and it returns the data from the past year.
-    """
-    result = get_stock_price.getRecent1YStockPrice(compamyabbreviation)
-    
-    return result
 
 @app.get("/api/get/stockprice_search_by_date/")
-async def stockprice_search_by_date(compamyabbreviation, startdate, enddate, current_user: User = Depends(get_current_active_user)):
+async def fun_stockprice_search_by_date(compamyabbreviation, startdate, enddate, current_user: User = Depends(get_current_active_user)):
     """
     This function needs you to choose a company stock name and the start/end date of the data you want to look up. It returns the historical stock price data for that 
     time period.
     """
     
-    result = get_stock_price.getStockPrice(compamyabbreviation, startdate, enddate)
+    result = SearchStockPrice.getStockPrice(compamyabbreviation, startdate, enddate)
     
     return result
 
-@app.get("/api/get/getPredictedStockPrice/")
-async def getPredictedStockPrice(compamyabbreviation, current_user: User = Depends(get_current_active_user)):
+@app.get("/api/get/predicted_stock_price/")
+async def fun_getPredictedStockPrice(compamyabbreviation, current_user: User = Depends(get_current_active_user)):
     """
     This function takes a company stock name as an input and return its predicted stock price
     """
-    
-    result = get_stock_price.PredictStockPrice(compamyabbreviation)
+
+    result = PredictStockPrice.PredictStockPrice(compamyabbreviation)
     
     return result
 
