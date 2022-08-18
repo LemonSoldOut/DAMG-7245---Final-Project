@@ -284,6 +284,13 @@ async def log_requests(request: Request, call_next):
 ############################# Logging #################################
 
 ############################# API Functions #################################
+@app.get("/api/train/models/")
+async def dailyTrainedModel(current_user: User = Depends(get_current_active_user)):
+    result = get_stock_price.saveStockPriceandTrainModel()
+    return result
+
+
+
 @app.get("/api/get/following/")
 async def getuserFollowCompanyStatusCheck(username,co_abbr, current_user: User = Depends(get_current_active_user)):
     return get_stock_price.userFollowCompanyStatusCheck(username,co_abbr)
