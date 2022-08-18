@@ -207,7 +207,7 @@ def userFollowCompanyStatusCheck(username,co_abbr):
                                 SaveStockPrice(co_abbr)
                                 res_dict[username] = co_abbr.upper() + " Table created! Saving success!"
                         else:
-                                res_dict[username] = "Someone already followed this company!"
+                                res_dict[username] = co_abbr.upper() + " Table already exists!"
                       
         else:
                 res_dict[username] = "Something went wrong!" 
