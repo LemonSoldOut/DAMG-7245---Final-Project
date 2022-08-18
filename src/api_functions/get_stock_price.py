@@ -2,12 +2,16 @@ import pandas as pd
 import numpy as np
 import yaml, os
 from sqlalchemy import create_engine
-from datetime import datetime
+from datetime import datetime,timedelta
 import pandas_datareader as pdr
 # Scale the data
 from sklearn.preprocessing import MinMaxScaler
 from keras.models import load_model
 import pymysql
+from keras.models import Sequential
+from keras.layers import Dense, LSTM
+
+#################################################################
 # @Description: API Functions
 # @Author: Meihu Qin
 # @UpdateDate: 2022/8/17
@@ -216,35 +220,25 @@ def userFollowCompanyStatusCheck(username,co_abbr):
 def saveStockPriceandTrainModel():
 
         #datetime.datetime is a data type within the datetime module
-        from datetime import timedelta, datetime
         yesterday = datetime.today()+timedelta(-1)
-        yesterday_f = yesterday.strftime('%Y-%m-%d')  
-        
-        
-        
-        end = yesterday_f
-        start = yesterday_f
+        yesterday_format = yesterday.strftime('%Y-%m-%d')
 
         #DataReader method name is case sensitive
-        df1 = pd.read_sql(f"select distinct stockAbbrName from stock_follow_table", dbConnection)
-        compamyabbreviation = df1['stockAbbrName'].values.tolist()
-        
-        
-        result = -1
-        
+        stockname = pd.read_sql(f"select distinct stockAbbrName from stock_follow_table", dbConnection)
+        compamyabbreviation = stockname['stockAbbrName'].values.tolist()
         for name in compamyabbreviation:
-                df = pdr.DataReader(name, 'yahoo', start, end)
-                df = df.reset_index()
-                df = df.round(2)
-                # Create SQLAlchemy engine to connect to MySQL Database
+                #Get yesterday stock data
+                yesterdaydata = pdr.DataReader(name, 'yahoo', f"'{yesterday_format}'", f"'{yesterday_format}'")
+                yesterdaydata = yesterdaydata.reset_index()
+                yesterdaydata = yesterdaydata.round(2)
+                
                 engine = create_engine("mysql+pymysql://{user}:{pw}@{host}/{db}"
                                                 .format(host=db_host, db=db_database, user=db_user, pw=db_password))
-                # Insert data in to MySQL using SQLAlchemy engine
-                # engine.execute("INSERT INTO  database_name.student (name ,class ,mark ,sex) \VALUES ('King1',  'Five',  '45',  'male')")
-                # Convert dataframe to sql table
-                df.to_sql(f'{name}', engine, if_exists='append', index=False)
+                #Save one row data into stock table                                     
+                yesterdaydata.to_sql(f'{name}', engine, if_exists='append', index=False)
                 engine.dispose()
 
+                df = pd.read_sql(f"select * from {name}", dbConnection)
                 # Create a new dataframe with only the 'Close column 
                 data = df.filter(['Close'])
 
@@ -273,8 +267,7 @@ def saveStockPriceandTrainModel():
                                 print(x_train)
                                 print(y_train)
                                 print()
-
-                
+                        
                 # Convert the x_train and y_train to numpy arrays 
                 x_train, y_train = np.array(x_train), np.array(y_train)
 
@@ -294,20 +287,13 @@ def saveStockPriceandTrainModel():
 
                 # Train the model
                 model.fit(x_train, y_train, batch_size=1, epochs=1)
-                model_path = abs_path + f"/models/{name}_model.h5"
+                model_path = abs_path + f"/models/{name}.h5"
                 model.save(model_path)
-                # check files if exists
-                # abbr_name list
-                if os.path.exists(model_path):
-                     result = 0   
-                else:
-                     result = 1
-        res = {}
-        if(result == 1):
-                res["model save"] = "Model saved Success!"
-        elif(result == 0):
-                res["model save"] = "One or more Model save failed!"
-        else:
-                res["model save"] =  "Something went wrong!"
-        return res         
+        
+        result = {}
+        for i in range(compamyabbreviation):
+                result[str[i+1]] = compamyabbreviation[i]
+        result["updated date"] = datetime.date.today()
+        
+        return result
                    
