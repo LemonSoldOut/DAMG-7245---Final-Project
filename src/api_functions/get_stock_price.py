@@ -7,7 +7,7 @@ import pandas_datareader as pdr
 # Scale the data
 from sklearn.preprocessing import MinMaxScaler
 from keras.models import load_model
-
+import pymysql
 # @Description: API Functions
 # @Author: Meihu Qin
 # @UpdateDate: 2022/8/17
@@ -15,7 +15,7 @@ from keras.models import load_model
 #Connect to MySQL DB
 abs_path = os.path.dirname(os.path.dirname((os.path.abspath(__file__))))
 
-yaml_path = abs_path + "\\mysql.yaml"
+yaml_path = abs_path + "/mysql.yaml"
 
 with open(yaml_path, 'r') as file:
         config = yaml.safe_load(file)
@@ -33,24 +33,12 @@ dbConnection = engine.connect()
     time period.
     """
 def SaveStockPrice(compamyabbreviation):
-
-        # connect to DB
-        abs_path = os.path.dirname(os.path.dirname((os.path.abspath(__file__))))
-
-        yaml_path = abs_path + "\\mysql.yaml"
-
-        with open(yaml_path, 'r') as file:
-                config = yaml.safe_load(file)
-
-        db_host = config['credentials']['host']
-        db_user = config['credentials']['user']
-        db_password = config['credentials']['password']
-        db_database = config['credentials']['database']
-
+                
         #datetime.datetime is a data type within the datetime module
         end = datetime.now()
         start = datetime(end.year - 10, end.month, end.day)
         #DataReader method name is case sensitive
+        
         df = pdr.DataReader(compamyabbreviation, 'yahoo', start, end)
         df = df.reset_index()
         df = df.round(2)
@@ -60,10 +48,12 @@ def SaveStockPrice(compamyabbreviation):
         # Insert data in to MySQL using SQLAlchemy engine
         # engine.execute("INSERT INTO  `database_name`.`student` (`name` ,`class` ,`mark` ,`sex`) \VALUES ('King1',  'Five',  '45',  'male')")
         # Convert dataframe to sql table                                   
-        df.to_sql(f'{compamyabbreviation}_stock', engine, if_exists='replace', index=False)
+        df.to_sql(f'{compamyabbreviation.upper()}', engine, if_exists='replace', index=False)
         engine.dispose()
 
-
+        res = compamyabbreviation.upper() + " Table created! Saving success!"
+        
+        return {"details":res}
 """
     This function needs you to choose a company stock name and the start/end date of the data you want to look up. It returns the historical stock price data for that 
     time period.
@@ -156,3 +146,168 @@ def PredictStockPrice(compamyabbreviation):
                 result[i] = predictions[i-1]
         
         return result
+
+
+# @author Cheng Wang
+# @date   8/17/2022
+def userFollowCompanyStatusCheck(username,co_abbr):
+        """
+                Check if the user whether could follow the given Company stock
+                @params:
+                        1. username -> user who sign in to FastAPI (we will check it from local MySQL database)
+                        2. co_abbr -> company abbrivation name
+                @return:
+                        1. already followed
+                        2. we will create one row of data into stock_follow_table
+                                2.1 download target company abbrivation name stock history(max 10 years)
+                        3. something wrong (we need check...)
+        """
+        con = pymysql.connect(host=db_host, user=db_user, password=db_password, database=db_database, charset="utf8")
+        c = con.cursor()
+        sql = "select userId from user_table WHERE username = '"
+        c.execute(sql + username + "';")
+        userId = c.fetchall()[0][0]
+        #print(result)
+        
+        checkUserFollowStatus = "select count(1) from stock_follow_table where userId = '" + str(userId) + "' and stockAbbrName = '" + str(co_abbr.upper()) + "';"
+        c.execute(checkUserFollowStatus)
+        result = c.fetchall()[0][0]
+        res_dict = {}
+        if(result == 1):
+                res_dict[username] = "You already followed!"
+                checkTableSQL = "show tables like '"+ co_abbr.upper() +"';"
+                #c.execute(checkTableSQL)
+                #test = c.fetchall()[0][0]
+                #print("========================================\n",test)
+                
+                
+        elif(result == 0):
+                #res_dict[username] = "You need follow it! Check DB if exists!"
+                nowTime = datetime.now()
+                c.execute('INSERT INTO stock_follow_table(userId,createDate,updateDate,disabled,stockAbbrName) VALUES(%s,%s,%s,%s,%s)',(userId,nowTime,nowTime,0,co_abbr.upper()))
+                con.commit()
+                # c.execute(checkUserFollowStatus)
+                # status = c.fetchall()[0][0]
+                # To download target Company Max (10 years) history 
+                
+                checkTableSQL = "show tables like '"+ co_abbr.upper() +"';"
+                c.execute(checkTableSQL)
+                getResultFromSQL = c.fetchall()
+                if getResultFromSQL == ():
+                        SaveStockPrice(co_abbr)
+                        res_dict[username] = co_abbr.upper() + " Table created! Saving success!"
+                else:
+                        table_name = getResultFromSQL[0][0]
+                        
+                        if(table_name.upper() != co_abbr.upper()):
+                                SaveStockPrice(co_abbr)
+                                res_dict[username] = co_abbr.upper() + " Table created! Saving success!"
+                        else:
+                                res_dict[username] = "Someone already followed this company!"
+                      
+        else:
+                res_dict[username] = "Something went wrong!" 
+        return res_dict
+
+      
+      
+      
+  
+def saveStockPriceandTrainModel():
+
+        #datetime.datetime is a data type within the datetime module
+        from datetime import timedelta, datetime
+        yesterday = datetime.today()+timedelta(-1)
+        yesterday_f = yesterday.strftime('%Y-%m-%d')  
+        
+        
+        
+        end = yesterday_f
+        start = yesterday_f
+
+        #DataReader method name is case sensitive
+        df1 = pd.read_sql(f"select distinct stockAbbrName from stock_follow_table", dbConnection)
+        compamyabbreviation = df1['stockAbbrName'].values.tolist()
+        
+        
+        result = -1
+        
+        for name in compamyabbreviation:
+                df = pdr.DataReader(name, 'yahoo', start, end)
+                df = df.reset_index()
+                df = df.round(2)
+                # Create SQLAlchemy engine to connect to MySQL Database
+                engine = create_engine("mysql+pymysql://{user}:{pw}@{host}/{db}"
+                                                .format(host=db_host, db=db_database, user=db_user, pw=db_password))
+                # Insert data in to MySQL using SQLAlchemy engine
+                # engine.execute("INSERT INTO  database_name.student (name ,class ,mark ,sex) \VALUES ('King1',  'Five',  '45',  'male')")
+                # Convert dataframe to sql table
+                df.to_sql(f'{name}', engine, if_exists='append', index=False)
+                engine.dispose()
+
+                # Create a new dataframe with only the 'Close column 
+                data = df.filter(['Close'])
+
+                # Convert the dataframe to a numpy array
+                dataset = data.values
+
+                # Get the number of rows to train the model on
+                training_data_len = len(dataset)
+
+                # Scale the data
+                scaler = MinMaxScaler(feature_range=(0,1))
+                scaled_data = scaler.fit_transform(dataset)
+
+                # Create the training data set 
+                # Create the scaled training data set
+                train_data = scaled_data[0:int(training_data_len), :]
+
+                # Split the data into x_train and y_train data sets
+                x_train = []
+                y_train = []
+
+                for i in range(60, len(train_data)):
+                        x_train.append(train_data[i-60:i, 0])
+                        y_train.append(train_data[i, 0])
+                        if i<= 61:
+                                print(x_train)
+                                print(y_train)
+                                print()
+
+                
+                # Convert the x_train and y_train to numpy arrays 
+                x_train, y_train = np.array(x_train), np.array(y_train)
+
+                # Reshape the data
+                x_train = np.reshape(x_train, (x_train.shape[0], x_train.shape[1], 1))
+
+
+                # Build the LSTM model
+                model = Sequential()
+                model.add(LSTM(128, return_sequences=True, input_shape= (x_train.shape[1], 1)))
+                model.add(LSTM(64, return_sequences=False))
+                model.add(Dense(25))
+                model.add(Dense(1))
+
+                # Compile the model
+                model.compile(optimizer='adam', loss='mean_squared_error')
+
+                # Train the model
+                model.fit(x_train, y_train, batch_size=1, epochs=1)
+                model_path = abs_path + f"/models/{name}_model.h5"
+                model.save(model_path)
+                # check files if exists
+                # abbr_name list
+                if os.path.exists(model_path):
+                     result = 0   
+                else:
+                     result = 1
+        res = {}
+        if(result == 1):
+                res["model save"] = "Model saved Success!"
+        elif(result == 0):
+                res["model save"] = "One or more Model save failed!"
+        else:
+                res["model save"] =  "Something went wrong!"
+        return res         
+                   
