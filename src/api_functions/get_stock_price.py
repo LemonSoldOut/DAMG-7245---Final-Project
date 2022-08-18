@@ -66,7 +66,7 @@ def getStockPrice(compamyabbreviation, start_date, end_date):
 
         start_date = str(start_date)
         end_date = str(end_date)
-        df = pd.read_sql(f"select * from {compamyabbreviation}_stock WHERE Date BETWEEN '{start_date}' AND '{end_date}'", dbConnection)
+        df = pd.read_sql(f"select * from {compamyabbreviation} WHERE Date BETWEEN '{start_date}' AND '{end_date}'", dbConnection)
         data = df.to_dict()
         return data
 
