@@ -79,7 +79,9 @@ def userFollowCompanyStatusCheck(username,co_abbr):
                                     con.commit()    
                                     res_dict[username] = co_abbr.upper() + " Table created! Saving success!"
                     else:
-                        res_dict[username] = co_abbr.upper() + " Table already exists!"
+                        c.execute('INSERT INTO stock_follow_table(userId,createDate,updateDate,disabled,stockAbbrName) VALUES(%s,%s,%s,%s,%s)',(userId,nowTime,nowTime,0,co_abbr.upper()))
+                        con.commit()
+                        res_dict[username] = co_abbr.upper() + " Table already exists! You successfully followed it!"
                     
     else:
         res_dict[username] = "Something went wrong!" 
