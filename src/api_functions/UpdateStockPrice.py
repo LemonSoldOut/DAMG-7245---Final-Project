@@ -2,6 +2,7 @@ import pandas as pd
 import yaml, os
 from sqlalchemy import create_engine
 from datetime import datetime,timedelta
+import pandas_datareader as pdr
 def UpdateStockPrice():
     #Connect to MySQL DB
     abs_path = os.path.dirname(os.path.dirname((os.path.abspath(__file__))))
@@ -26,21 +27,23 @@ def UpdateStockPrice():
     #DataReader method name is case sensitive
     stockname = pd.read_sql(f"select distinct stockAbbrName from stock_follow_table", dbConnection)
     compamyabbreviations = stockname['stockAbbrName'].values.tolist()
+    count = 0
     for name in compamyabbreviations:
-            dbConnection = engine.connect()
-            #Get yesterday stock data
-            last_record_date = pd.read_sql(f"select Date from {name} ORDER BY Date DESC LIMIT 1", dbConnection)
-            last_record_date = last_record_date['Date'].to_string(index = False)
-            print(last_record_date)
-            if last_record_date == yesterday_format:
-                    result[name] = f"Record for {yesterday_format} is already exist!"
-
-            else:
-                    yesterdaydata = pdr.DataReader(name, 'yahoo', f"'{yesterday_format}'", f"'{yesterday_format}'")
-                    yesterdaydata = yesterdaydata.reset_index()
-                    yesterdaydata = yesterdaydata.round(2)
-                    #Save one row data into stock table                                     
-                    yesterdaydata.to_sql(f'{name}', engine, if_exists='append', index=False)
-                    result[name] = f"Record for {yesterday_format} has beed added!"
-                    
+        dbConnection = engine.connect()
+        #Get yesterday stock data
+        last_record_date = pd.read_sql(f"select Date from {name} ORDER BY Date DESC LIMIT 1", dbConnection)
+        last_record_date = last_record_date['Date'].to_string(index = False)
+        yesterdaydata = pdr.DataReader(name, 'yahoo', f"'{yesterday_format}'", f"'{yesterday_format}'")
+        yesterdaydata = yesterdaydata.reset_index()
+        yesterdaydata = yesterdaydata.round(2)
+        if last_record_date == yesterday_format:
+                count += 0
+        elif yesterday.strftime("%a") == "Sat" or yesterday.strftime("%a") == "Sun":
+                count += 0
+        else:
+                #Save one row data into stock table                                     
+                yesterdaydata.to_sql(f'{name}', engine, if_exists='append', index=False)
+                #result[name] = f"Record for {yesterday_format} has beed added!"
+                count += 1
+    result["Companies that has been updated"] = count                
     return result

@@ -285,12 +285,12 @@ async def log_requests(request: Request, call_next):
 
 ############################# API Functions #################################
 @app.get("/api/train/models/")
-async def fun_TraineModel(current_user: User = Depends(get_current_active_user)):
+async def fun_TraineModel():
     result = TrainModel.TrainModel()
     return result
 
 @app.get("/api/get/update_stock_price/")
-async def fun_UpdateStockPrice(current_user: User = Depends(get_current_active_user)):
+async def fun_UpdateStockPrice():
     result = UpdateStockPrice.UpdateStockPrice()
     return result
 
