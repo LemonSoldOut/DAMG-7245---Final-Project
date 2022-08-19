@@ -26,7 +26,7 @@ def PredictStockPrice(compamyabbreviation):
         dbConnection = engine.connect()
         result = {}
         try:
-                model_path = abs_path + f"/models/{compamyabbreviation}.h5"    
+                model_path = abs_path + f"/models/{compamyabbreviation.upper()}.h5"    
                 model = load_model(model_path)
 
         except:
@@ -34,34 +34,39 @@ def PredictStockPrice(compamyabbreviation):
                 return result
         try:
 
-                df = pd.read_sql(f"select Close from {compamyabbreviation}", dbConnection)
+                df = pd.read_sql(f"select Close from {compamyabbreviation.upper()}", dbConnection)
         except:    
                 result = {"details": "table not found!"}
                 return result
-        dataset = df.values
+        # dataset = df[-60:].values
+        # scaler = MinMaxScaler(feature_range=(0,1))
+        # scaled_data = scaler.fit_transform(dataset)
+        
+        # data = scaled_data[-70: , :]
+        # x_test = []
+
+        # for i in range(60, len(data)):
+        #         x_test.append(data[i-60:i, 0])
+        #         print(data[i-60:i, 0])
+
+        last_60_days = df[-60:].values
         scaler = MinMaxScaler(feature_range=(0,1))
-        scaled_data = scaler.fit_transform(dataset)
-        test_data = scaled_data[2446: , :]
-        # Create the data sets x_test and y_test
+        last_60_days_scaled = scaler.fit_transform(last_60_days)
+
         x_test = []
 
-        for i in range(60, len(test_data)):
-                x_test.append(test_data[i-60:i, 0])
+        x_test.append(last_60_days_scaled)
 
         # Convert the data to a numpy array
         x_test = np.array(x_test)
 
-        print(len(x_test))
         # Reshape the data
         x_test = np.reshape(x_test, (x_test.shape[0], x_test.shape[1], 1 ))
 
         #Get the models predicted price values 
         predictions = model.predict(x_test)
         predictions = scaler.inverse_transform(predictions)
-        predictions = predictions.reshape(10).tolist()
-        print(predictions)
-
-        for i in range(1,11):
-                result[i] = predictions[i-1]
+        predictions = predictions.reshape(len(predictions)).tolist()
+        result["predicted stock price for today"] = predictions[0]
 
         return result

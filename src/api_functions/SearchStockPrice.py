@@ -32,7 +32,7 @@ def getStockPrice(compamyabbreviation, start_date, end_date):
         start_date = str(start_date)
         end_date = str(end_date)
         try:
-                df = pd.read_sql(f"select * from {compamyabbreviation} WHERE Date BETWEEN '{start_date}' AND '{end_date}'", dbConnection)
+                df = pd.read_sql(f"select * from {compamyabbreviation.upper()} WHERE Date BETWEEN '{start_date}' AND '{end_date}'", dbConnection)
                 data = df.to_dict()
                 return data
         except:
@@ -40,7 +40,7 @@ def getStockPrice(compamyabbreviation, start_date, end_date):
                 if result == {"details":compamyabbreviation.upper() + " is not a valid company stock name!"}:
                         return result
                 else:
-                        df = pd.read_sql(f"select * from {compamyabbreviation} WHERE Date BETWEEN '{start_date}' AND '{end_date}'", dbConnection)
+                        df = pd.read_sql(f"select * from {compamyabbreviation.upper()} WHERE Date BETWEEN '{start_date}' AND '{end_date}'", dbConnection)
                         data = df.to_dict()
                         return data
         

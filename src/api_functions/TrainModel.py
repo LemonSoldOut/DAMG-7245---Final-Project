@@ -30,7 +30,7 @@ def TrainModel():
     stockname = pd.read_sql(f"select distinct stockAbbrName from stock_follow_table", dbConnection)
     compamyabbreviations = stockname['stockAbbrName'].values.tolist()
     for name in compamyabbreviations:
-        df = pd.read_sql(f"select * from {name}", dbConnection)
+        df = pd.read_sql(f"select * from {name.upper()}", dbConnection)
         # Create a new dataframe with only the 'Close column 
         data = df.filter(['Close'])
 

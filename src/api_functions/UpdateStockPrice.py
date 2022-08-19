@@ -31,7 +31,7 @@ def UpdateStockPrice():
     for name in compamyabbreviations:
         dbConnection = engine.connect()
         #Get yesterday stock data
-        last_record_date = pd.read_sql(f"select Date from {name} ORDER BY Date DESC LIMIT 1", dbConnection)
+        last_record_date = pd.read_sql(f"select Date from {name.upper()} ORDER BY Date DESC LIMIT 1", dbConnection)
         last_record_date = last_record_date['Date'].to_string(index = False)
         yesterdaydata = pdr.DataReader(name, 'yahoo', f"'{yesterday_format}'", f"'{yesterday_format}'")
         yesterdaydata = yesterdaydata.reset_index()
