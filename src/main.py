@@ -1,4 +1,5 @@
 from distutils.log import error
+from encodings import utf_8
 from pickle import GLOBAL
 import random
 import string
@@ -245,33 +246,30 @@ async def log_requests(request: Request, call_next):
     response_body = [section async for section in response.body_iterator]
     response.body_iterator = iterate_in_threadpool(iter(response_body))
     level=logging.getLevelName(logger.getEffectiveLevel())
+    if request.url == 'http://127.0.0.1:8000/token/' or request.url=='http://127.0.0.1:8000/openapi.json':
+        return response
     statuscode = response.status_code
-    try:    
-        message = response_body[0].decode("utf-8")
-        if response_body[0].decode("utf-8") == '{"detail":"Item not found"}':
-            logger.error("No data Found! please check your input.")
-            level = 'ERROR'
-            message = ("No data Found! please check your input.")
-            statuscode =status.HTTP_404_NOT_FOUND
-        if response_body[0].decode("utf-8") == '{"detail":"Given number should be less than 10 and greater than 0!"}':
-            logger.error("Given number should be less than 10 and greater than 0!")
-            level = 'ERROR'
-            message = ("Given number should be less than 10 and greater than 0!")
-            statuscode =status.HTTP_400_BAD_REQUEST
-        if response_body[0].decode("utf-8") == '{"detail":"Not authenticated"}':
-            statuscode =status.HTTP_401_UNAUTHORIZED
-            logger.error("Not authenticated.")
-            level = 'ERROR'
-            message = ("Error: Unauthorized.")
-    except:
-        message = "Results Found!"
-    
+    message = response_body[0].decode("utf-8")
+    if response_body[0].decode("utf-8") == '{"details":"model not found!"}':
+        logger.error("model not found!")
+        level = 'ERROR'
+        message = ("model not found!")
+        statuscode =status.HTTP_404_NOT_FOUND
+    elif " is not a valid company stock name!" in response_body[0].decode("utf-8"):
+        logger.error("Please input a valid ticker name!")
+        level = 'ERROR'
+        message = ("Please input a valid ticker name!")
+        statuscode =status.HTTP_400_BAD_REQUEST
+    elif response_body[0].decode("utf-8") == '{"detail":"Not authenticated"}':
+        statuscode =status.HTTP_401_UNAUTHORIZED
+        logger.error("Not authenticated.")
+        level = 'ERROR'
+        message = ("Error: Unauthorized.")
+    else:
+        message = "Function Runs Successfully!"
     
     global username
     db = con.cursor()
-    if request.url == 'http://127.0.0.1:8000/token/' or request.url=='http://127.0.0.1:8000/openapi.json':
-        return response
-
     user_status = db.execute('SELECT userId from user_table where username = %s', (username))
     if user_status != 0:
         sqlresult = db.fetchall()
