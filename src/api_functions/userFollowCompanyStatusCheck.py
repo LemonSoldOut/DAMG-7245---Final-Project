@@ -39,7 +39,7 @@ def userFollowCompanyStatusCheck(username,co_abbr):
     result = c.fetchall()[0][0]
     res_dict = {}
     if(result == 1):
-            res_dict[username] = "You already followed!"
+            res_dict["details"] = "You already followed!"
             checkTableSQL = "show tables like '"+ co_abbr.upper() +"';"
             #c.execute(checkTableSQL)
             #test = c.fetchall()[0][0]
@@ -61,11 +61,11 @@ def userFollowCompanyStatusCheck(username,co_abbr):
                     res_from_save = SaveStockPrice.SaveStockPrice(co_abbr)["details"]
                     
                     if("not a valid company stock name" in res_from_save):
-                        res_dict[username] = co_abbr.upper() + " is not a valid company stock name!" 
+                        res_dict["details"] = co_abbr.upper() + " is not a valid company stock name!" 
                     else:
                         c.execute('INSERT INTO stock_follow_table(userId,createDate,updateDate,disabled,stockAbbrName) VALUES(%s,%s,%s,%s,%s)',(userId,nowTime,nowTime,0,co_abbr.upper()))
                         con.commit()
-                        res_dict[username] = co_abbr.upper() + " Table created! Saving success!"
+                        res_dict["details"] = co_abbr.upper() + " Table created! Saving success!"
             else:
                     table_name = getResultFromSQL[0][0]
                     
@@ -73,16 +73,16 @@ def userFollowCompanyStatusCheck(username,co_abbr):
                             res_from_save = SaveStockPrice.SaveStockPrice(co_abbr)["details"]
                     
                             if("not a valid company stock name" in res_from_save):
-                                    res_dict[username] = co_abbr.upper() + " is not a valid company stock name!" 
+                                    res_dict["details"] = co_abbr.upper() + " is not a valid company stock name!" 
                             else:
                                     c.execute('INSERT INTO stock_follow_table(userId,createDate,updateDate,disabled,stockAbbrName) VALUES(%s,%s,%s,%s,%s)',(userId,nowTime,nowTime,0,co_abbr.upper()))
                                     con.commit()    
-                                    res_dict[username] = co_abbr.upper() + " Table created! Saving success!"
+                                    res_dict["details"] = co_abbr.upper() + " Table created! Saving success!"
                     else:
                         c.execute('INSERT INTO stock_follow_table(userId,createDate,updateDate,disabled,stockAbbrName) VALUES(%s,%s,%s,%s,%s)',(userId,nowTime,nowTime,0,co_abbr.upper()))
                         con.commit()
-                        res_dict[username] = co_abbr.upper() + " Table already exists! You successfully followed it!"
+                        res_dict["details"] = co_abbr.upper() + " Table already exists! You successfully followed it!"
                     
     else:
-        res_dict[username] = "Something went wrong!" 
+        res_dict["details"] = "Something went wrong!" 
     return res_dict
