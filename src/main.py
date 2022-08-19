@@ -65,8 +65,8 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 30 # 30 mins expire
 # connect to DB
 
 
-abs_path = os.path.dirname((os.path.abspath(__file__)))
-yaml_path = abs_path + "/mysql.yaml"
+abs_path = os.path.dirname(os.path.dirname((os.path.abspath(__file__))))
+yaml_path = abs_path + "/src/mysql.yaml"
 
 with open(yaml_path, 'r') as file:
     config = yaml.safe_load(file)
@@ -213,7 +213,7 @@ async def read_users_me(current_user: User = Depends(get_current_active_user)):
 ############################# Logging #################################
 
 # setup loggers
-logging.config.fileConfig('logging.conf', disable_existing_loggers=False)
+logging.config.fileConfig(abs_path +'/src/log/logging.conf', disable_existing_loggers=False)
 
 # get root logger
 logger = logging.getLogger(__name__)  # the __name__ resolve to "main" since we are at the root of the project. 
@@ -284,23 +284,13 @@ async def log_requests(request: Request, call_next):
 ############################# Logging #################################
 
 ############################# API Functions #################################
-@app.get("/api/train/models/")
-async def fun_TraineModel():
-    result = TrainModel.TrainModel()
-    return result
-
-@app.get("/api/get/update_stock_price/")
-async def fun_UpdateStockPrice():
-    result = UpdateStockPrice.UpdateStockPrice()
-    return result
-
 @app.get("/api/get/following/")
 async def fun_userFollowCompanyStatusCheck(username,co_abbr, current_user: User = Depends(get_current_active_user)):
     return userFollowCompanyStatusCheck.userFollowCompanyStatusCheck(username,co_abbr)
 
 
 @app.get("/api/get/save_stock_price/")
-async def fun_SaveStockPrice(compamyabbreviation, current_user: User = Depends(get_current_active_user)):
+async def fun_SaveStockPrice(compamyabbreviation):#, current_user: User = Depends(get_current_active_user)):
     """
     This function takes a company stock name as an input, and it returns the data from the past 7 days.
     """
@@ -328,6 +318,17 @@ async def fun_getPredictedStockPrice(compamyabbreviation, current_user: User = D
     result = PredictStockPrice.PredictStockPrice(compamyabbreviation)
     
     return result
+
+@app.get("/api/train/models/")
+async def fun_TraineModel():
+    result = TrainModel.TrainModel()
+    return result
+
+@app.get("/api/get/update_stock_price/")
+async def fun_UpdateStockPrice():
+    result = UpdateStockPrice.UpdateStockPrice()
+    return result
+
 
 
 # @Description: input basemodel
