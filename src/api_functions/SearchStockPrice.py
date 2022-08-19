@@ -1,7 +1,7 @@
 import pandas as pd
 import yaml, os
 from sqlalchemy import create_engine
-
+from api_functions import SaveStockPrice
 #################################################################
 # @Description: API Functions
 # @Author: Meihu Qin
@@ -31,9 +31,19 @@ def getStockPrice(compamyabbreviation, start_date, end_date):
 
         start_date = str(start_date)
         end_date = str(end_date)
-        df = pd.read_sql(f"select * from {compamyabbreviation} WHERE Date BETWEEN '{start_date}' AND '{end_date}'", dbConnection)
-        data = df.to_dict()
-        return data
+        try:
+                df = pd.read_sql(f"select * from {compamyabbreviation} WHERE Date BETWEEN '{start_date}' AND '{end_date}'", dbConnection)
+                data = df.to_dict()
+                return data
+        except:
+                result = SaveStockPrice.SaveStockPrice(compamyabbreviation)
+                if result == {"details":compamyabbreviation.upper() + " is not a valid company stock name!"}:
+                        return result
+                else:
+                        df = pd.read_sql(f"select * from {compamyabbreviation} WHERE Date BETWEEN '{start_date}' AND '{end_date}'", dbConnection)
+                        data = df.to_dict()
+                        return data
+        
 
 
 

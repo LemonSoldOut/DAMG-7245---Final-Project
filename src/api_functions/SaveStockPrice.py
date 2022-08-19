@@ -32,15 +32,19 @@ def SaveStockPrice(compamyabbreviation):
     end = datetime.now()
     start = datetime(end.year - 10, end.month, end.day)
     #DataReader method name is case sensitive
-    
-    df = pdr.DataReader(compamyabbreviation, 'yahoo', start, end)
-    df = df.reset_index()
-    df = df.round(2)
-    # Insert data in to MySQL using SQLAlchemy engine
-    # engine.execute("INSERT INTO  `database_name`.`student` (`name` ,`class` ,`mark` ,`sex`) \VALUES ('King1',  'Five',  '45',  'male')")
-    # Convert dataframe to sql table                                   
-    df.to_sql(f'{compamyabbreviation.upper()}', engine, if_exists='replace', index=False)
+    try:
+        df = pdr.DataReader(compamyabbreviation, 'yahoo', start, end)
+        df = df.reset_index()
+        df = df.round(2)
+        # Insert data in to MySQL using SQLAlchemy engine
+        # engine.execute("INSERT INTO  `database_name`.`student` (`name` ,`class` ,`mark` ,`sex`) \VALUES ('King1',  'Five',  '45',  'male')")
+        # Convert dataframe to sql table                                   
+        df.to_sql(f'{compamyabbreviation.upper()}', engine, if_exists='replace', index=False)
 
-    res = compamyabbreviation.upper() + " Table created! Saving success!"
+        res = compamyabbreviation.upper() + " Table created! Saving success!"
+        return {"details":res}
+    except:
+        res = compamyabbreviation.upper() + " is not a valid company stock name!"
+        return {"details":res}
+
     
-    return {"details":res}
