@@ -11,12 +11,13 @@ from keras.layers import Dense, LSTM
 # @Description: API Functions
 # @Author: Meihu Qin
 # @date   8/17/2022
+# @Reference https://www.kaggle.com/code/faressayah/stock-market-analysis-prediction-using-lstm 
 """
             Train model for each followed company
             @params:
                 
             @return: company name + date +model generated!
-                    
+                   
     """
 def TrainModel():
     #Connect to MySQL DB
