@@ -9,23 +9,30 @@ import base64
 from PIL import Image
 import os
 import requests
-import pymysql
-#st.session_state
+#import pymysql
 
+#st.session_state # check golbal variables status
+
+
+if 'token' not in st.session_state:
+    st.session_state.token = ''
 ###############################################################
 def homepage():
     #st.sidebar.markdown("# Military Aircraft Detection Dataset version 7 🎈")    
-    st.header("Military Aircraft Detection version 7 🎈")
-    st.image(showHomePageImgCover())
+    st.header("DAMG 7245 Big-Data Systems and Intelligence Analytics Final Project  🎈")
+    
+    col1, col2, col3 = st.columns([2,5,1])
+    #with col2:
+        #st.image(showHomePageImgCover())
     markdown_info = """
-    ## About Dataset
-    - [Kaggle Dataset Link](https://www.kaggle.com/datasets/a2015003713/militaryaircraftdetectiondataset/)
-    > - bounding box in PASCAL VOC format (xmin, ymin, xmax, ymax)
-    > - 40 aircraft types
-    > (A10, A400M, AG600, AV8B, B1, B2, B52 Be200, C130, C17, C5, E2, EF2000, F117, F14, F15, F16, F18, F22, F35, F4, J20, JAS39, MQ9, Mig31, Mirage2000, RQ4, Rafale, SR71(may contain A12), Su34, Su57, Tornado, Tu160, Tu95(may contain Tu142), U2, US2, V22, Vulcan, XB70, YF23)
+    ## About Our Project
+    > - We colect history of target companies stock values "open" "close" "Highest" "Lowest" "Adj Close" "Volume" daily
+    > - Collect all data we get and store all of them into our Cloud database
+    > - You also can search any company you are instersted among some days you customised
+    > - We trained our predict model every day 00:00:00 and you can eaily get your answer!
 
     ## Team 2
-    - [Github Repo](https://github.com/BigDataIA-Summer2022Team2/Assignment2)
+    - [Github Repo](https://github.com/BigDataIA-Summer2022Team2/Assignment3)
     - Cheng Wang
         - NUID: 001280107
         - email: wang.cheng3@northeastern.edu
@@ -39,7 +46,7 @@ def homepage():
 # display home page img cover
 def showHomePageImgCover():
     file_path = os.path.dirname(os.path.dirname((os.path.abspath(__file__))))
-    img_path = file_path + "/0041e69431bf872309d1aff628b6494f.jpg"
+    img_path = file_path + "/cast_ok_0_2810.jpeg"
 
     open_img = Image.open(img_path)
     img_data = np.asarray(open_img)
@@ -68,11 +75,12 @@ if st.session_state["authentication_status"]:
     homepage()
     
     
-    
 elif st.session_state["authentication_status"] == False:
     st.error('Username or Password is incorrect')
+    st.session_state.token = ''
 elif st.session_state["authentication_status"] == None:
     st.warning('Please enter your username and password')
+    st.session_state.token = ''
     
 with st.sidebar:
     if(st.session_state.authentication_status == True):
@@ -83,11 +91,13 @@ with st.sidebar:
         data = {'grant_type':'','username': str(username),"password": str(username),'scope':'','client_id':'','client_secret':''}
             
         #res = requests.post(url=url,params=data,headers=headers)
-        res = requests.post(url=url,data=data,headers=headers)
-        token = res.json()["access_token"]
         
-        st.session_state["token"] = token
+        if(st.session_state.token == ''):
+            res = requests.post(url=url,data=data,headers=headers)
+            token = res.json()["access_token"]
+            st.session_state["token"] = token
         st.info('User: ***%s***' % st.session_state.username)
+
         authenticator.logout('Logout')
     
 
