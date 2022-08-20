@@ -6,6 +6,18 @@ from datetime import datetime,timedelta
 from sklearn.preprocessing import MinMaxScaler
 from keras.models import Sequential
 from keras.layers import Dense, LSTM
+
+#################################################################
+# @Description: API Functions
+# @Author: Meihu Qin
+# @date   8/17/2022
+"""
+            Train model for each followed company
+            @params:
+                
+            @return: company name + date +model generated!
+                    
+    """
 def TrainModel():
     #Connect to MySQL DB
     abs_path = os.path.dirname(os.path.dirname((os.path.abspath(__file__))))

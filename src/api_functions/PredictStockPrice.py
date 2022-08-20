@@ -4,9 +4,18 @@ import yaml, os
 from sqlalchemy import create_engine
 from sklearn.preprocessing import MinMaxScaler
 from keras.models import load_model
-
+#################################################################
+# @Description: API Functions
+# @Author: Meihu Qin
+# @date   8/17/2022
 """
-    This function takes a company stock name as an input and return its predicted stock price
+            Predict today's closing price
+            @params:
+                    1. compamyabbreviation -> company ticker symbol
+                
+            @return:
+                    1. predicted stock price for today
+                    2. "model not found!" if the model has not been created
     """
 def PredictStockPrice(compamyabbreviation):
         #Connect to MySQL DB

@@ -3,6 +3,18 @@ import yaml, os
 from sqlalchemy import create_engine
 from datetime import datetime,timedelta
 import pandas_datareader as pdr
+
+#################################################################
+# @Description: API Functions
+# @Author: Meihu Qin
+# @date   8/17/2022
+"""
+            Update stock price for companies in the following list
+            @params:
+                    
+            @return:
+                    1. how many companies record has been updated
+    """
 def UpdateStockPrice():
     #Connect to MySQL DB
     abs_path = os.path.dirname(os.path.dirname((os.path.abspath(__file__))))

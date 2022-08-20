@@ -6,12 +6,15 @@ import pandas_datareader as pdr
 #################################################################
 # @Description: API Functions
 # @Author: Meihu Qin
-# @UpdateDate: 2022/8/17
-
-
+# @date   8/17/2022
 """
-    This function needs you to choose a company stock name and the start/end date of the data you want to look up. It returns the historical stock price data for that 
-    time period.
+            Save company's stock price to our mysql database
+            @params:
+                    1. compamyabbreviation -> company ticker symbol
+                
+            @return:
+                    1. company + "Table created! Saving success!"
+                    2. company +" is not a valid company stock name!" if the name is not valid
     """
 def SaveStockPrice(compamyabbreviation):
     #Connect to MySQL DB
