@@ -109,7 +109,7 @@ if(st.session_state.authentication_status == True):
             # st.write('Log start from:', log_end)
         
     
-    if(st.session_state["username"] != "cheng" and st.session_state["username"] != "meihu" and st.session_state["username"] != "root"):
+    if(st.session_state["username"] != "cheng" and st.session_state["username"] != "meihu" and st.session_state["username"] != "prof" and st.session_state["username"] != "ta"):
         
     
         c.execute("SELECT COUNT(*) FROM log_table lt INNER JOIN user_table ut on lt.userId = ut.userId WHERE ut.username ='" + st.session_state.username + "'")
@@ -186,35 +186,10 @@ if(st.session_state.authentication_status == True):
         #st.line_chart(df2)
         st.bar_chart(df10)
         
+
+        
         ####################################################
-        sql5 = """
-            SELECT
-	            count( sft.stockAbbrName ),
-	            sft.userId,
-	            ut.username
-	        FROM
-	            `stock_follow_table` sft 
-	
-	        INNER JOIN user_table ut ON ut.userId = sft.userId 
-
-            GROUP BY userId;
         
-        """
-        
-        c.execute(sql5)
-        getFollowData = c.fetchall()
-        #st.write(getFollowData)
-        user_list = []
-        user_follow = []
-        for i in getFollowData:
-            user_list.append(i[2])
-            user_follow.append(i[0])
-
-        #st.write(user_list)
-        #st.write(user_follow)
-        df9 = pd.DataFrame({'followed number': user_follow,'username':user_list})
-        df9 = df9.rename(columns={'username':'index'}).set_index('index')
-        st.bar_chart(df9)
         
         
     else:
@@ -334,5 +309,34 @@ if(st.session_state.authentication_status == True):
         #st.line_chart(df2)
         st.bar_chart(df2)
         
+        
+        sql5 = """
+            SELECT
+	            count( sft.stockAbbrName ),
+	            sft.userId,
+	            ut.username
+	        FROM
+	            `stock_follow_table` sft 
+	
+	        INNER JOIN user_table ut ON ut.userId = sft.userId 
+
+            GROUP BY userId;
+        
+        """
+        
+        c.execute(sql5)
+        getFollowData = c.fetchall()
+        #st.write(getFollowData)
+        user_list = []
+        user_follow = []
+        for i in getFollowData:
+            user_list.append(i[2])
+            user_follow.append(i[0])
+
+        #st.write(user_list)
+        #st.write(user_follow)
+        df9 = pd.DataFrame({'followed number': user_follow,'username':user_list})
+        df9 = df9.rename(columns={'username':'index'}).set_index('index')
+        st.bar_chart(df9)
         
         
