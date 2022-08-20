@@ -225,11 +225,11 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 
 
 
-# Home page
-@app.get("/", response_class=HTMLResponse)
-async def home():
-    response = returnHomePage.getHomePage()
-    return response
+# # Home page
+# @app.get("/", response_class=HTMLResponse)
+# async def home():
+#     response = returnHomePage.getHomePage()
+#     return response
 
 @app.middleware("http")
 async def log_requests(request: Request, call_next):
