@@ -9,8 +9,19 @@
 
 ## 1. Intro
 
-- Our final project is a Web APP which could track those companies from Yahoo Finance API
-- create
+- Our final project is a Web APP which could track those companies stocks from Yahoo Finance API
+
+- Our whole project contains several parts:
+  1. FastAPI - Web API
+  2. Streamlit - Front end prototype demo
+  3. Docker - dockerfile
+  4. Github CI/CD - continues integration + deploy
+  5. Airflow - set up a daily task to update stock values
+  6. PyTest - simple unit tests for fastaapi
+  7. Logs - be stored in cloud MySQL and be displayed in Streamlit
+  8. MySQL db - log, user, user_follow, company stocks tables
+  9. ~~Prometheus + Grafana - display server status(metrics)~~
+  10. ~~Prometheus Alert Manager - send alert when server's metrics meets requirememts~~
 
 ## 2. Setup
 
